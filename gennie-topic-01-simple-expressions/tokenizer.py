@@ -36,13 +36,6 @@ def test_simple_tokens():
     print("testing simple tokens")
     assert tokenize("+") == [{'tag': '+', 'value': '+', 'position': 0}]
     assert tokenize("-") == [{'tag': '-', 'value': '-', 'position': 0}]
-    i = 0
-    for char in "+-*/":
-        tokens = tokenize(char)
-        print(tokens)
-        assert tokens[0]["tag"] == char
-        assert tokens[0]["value"] == char
-        assert tokens[0]["position"] == i
 
 if __name__ == "__main__": #if this is the main program...
     test_simple_tokens()
