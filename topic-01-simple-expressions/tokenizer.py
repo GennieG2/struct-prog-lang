@@ -64,7 +64,6 @@ def test_simple_tokens():
         assert tokens[0]["tag"] == "number"
         assert tokens[0]["value"] == float(number)
 
-
 if __name__ == "__main__":
     test_simple_tokens()
     print("done.")
