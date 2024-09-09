@@ -18,15 +18,15 @@ patterns = [
 
 for pattern in patterns: #for each element in patterns
     pattern[0] = re.compile(pattern[0]) 
-    #replaces first part of the two-part element (patterns[i][0]) by corresponding regEx searcher/matcher object which is capable to search any string for corresponding pattern 
+    #replaces first part of the two-part element (patterns[i][0]) by corresponding regEx searcher/matcher object which is capable to search any string for corresponding pattern
 
-def tokenize(characters): #our inpu.,мt string (array of any characters (Ex: 6*(2+3.5)+7))
+def tokenize(characters): #our input string (array of any characters (Ex: 6*(2+3.5)+7)), output: array of token structures 
     tokens = [] #resulting array of parsed token objects initialized
     position = 0 #position in string is 0
     while position < len(characters): #we still have a character left to work with
-        for pattern, tag in patterns: #go thru all elements of patterns array and assign pattern = patterns[i][0], tag = patterns[i][1]
-                            #pattern is a searcher for particular allowed combination of characters
-                            # pattern.match(stringToSearch, positionToStart) function searches specific position for associated combo of char
+        #trying to find token for THIS position
+        for pattern, tag in patterns: #go thru all elements of patterns array. pattern = patterns[i][0] (searcher) & tag = patterns[i][1] (value to assign)
+                    # pattern.match(stringToSearch, positionToStart) function checks if specific token is at specific position; and returns match object if foubd (otherwise "none") 
             match = pattern.match(characters, position) #if reg ex matches string of characters, we got a match!
             if match:
                 break
@@ -36,7 +36,7 @@ def tokenize(characters): #our inpu.,мt string (array of any characters (Ex: 6*
             'value': match.group(0),
             'position': position,
         }
-        tokens.append(token) #add token structure to the resulting array
+        tokens.append(token) #add/push token structure to the resulting array
         position = match.end() #change position to next character after token ends
         
     for token in tokens:
@@ -49,7 +49,7 @@ def tokenize(characters): #our inpu.,мt string (array of any characters (Ex: 6*
 
 def test_simple_tokens():
     print("testing simple tokens")
-    assert tokenize("+") == [{"tag": "+", "value": "+", "position": 0}]
+    assert tokenize("+") == [{"tag": "+", "value": "+", "position": 0}] #test for just +
     assert tokenize("-") == [{"tag": "-", "value": "-", "position": 0}]
     i = 0
     for char in "+-*/()":
