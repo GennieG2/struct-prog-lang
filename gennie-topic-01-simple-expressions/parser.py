@@ -22,6 +22,10 @@ Example:
     fa + fa * fa - fa
     T  +    T    - T    #a term can be just a factor
           E
+
+T     T       T     T      
+2 + 3 * 5 + 4 * 7 + 6
+F  F    F   F   F   F
 """
 from pprint import pprint
 
@@ -76,6 +80,12 @@ def test_parse_simple_expression():
     }
     # pprint(ast)
 
+    tokens = tokenize("1.23")
+    ast, tokens = parse_simple_expression(tokens)
+    assert ast["tag"] == "number"
+    assert ast["value"] == 1.23
+
+
 def parse_factor(tokens):
     """
     factor = simple_expression
@@ -89,14 +99,17 @@ def test_parse_factor():
     print("testing parse_factor")
     for s in ["2", "(2)", "-2"]:
         assert parse_factor(tokenize(s)) == parse_simple_expression(tokenize(s))
-
+    
+    for x in ["123.45","1.", ".1", "123"]:
+        assert parse_factor(tokenize(x)) == parse_simple_expression(tokenize(x))
 
 def parse_term(tokens):
     """
     term = factor { "*"|"/" factor }
     """
     node, tokens = parse_factor(tokens)
-    while tokens[0]["tag"] in ["*", "/"]:
+    #fixed bug by checking length
+    while len(tokens) > 0 and tokens[0]["tag"] in ["*", "/"]:
         tag = tokens[0]["tag"]
         right_node, tokens = parse_factor(tokens[1:])
         node = {"tag": tag, "left": node, "right": right_node}
@@ -107,7 +120,43 @@ def test_parse_term():
     """
     term = factor { "*"|"/" factor }
     """
-    pass
+    print("testing parse_term")
+
+    exp = "23"
+    originalTokens = tokenize(exp)
+    node, tokens = parse_term(originalTokens)
+    assert node == originalTokens[0]
+
+    exp = "2+3"
+    originalTokens = tokenize(exp)
+    node, tokens = parse_term(originalTokens)
+    assert node == originalTokens[0]
+
+    exp = "2*3"
+    originalTokens = tokenize(exp)
+    node, tokens = parse_term(originalTokens)
+    assert node == {
+        "tag": "*",
+        "left": originalTokens[0],
+        "right": originalTokens[2]
+    }
+
+    exp = "2*3+18"
+    originalTokens = tokenize(exp)
+    node, tokens = parse_term(originalTokens)
+    assert node == {
+        "tag": "*",
+        "left": originalTokens[0],
+        "right": originalTokens[2]
+    }
+
+    exp = "3*(2+8)+7"
+    originalTokens = tokenize(exp)
+    node, tokens = parse_term(originalTokens)
+    assert node["left"]["value"] == 3
+    assert node["right"]["left"]["value"] == 2
+    assert node["right"]["right"]["value"] == 8
+    
 
 
 def parse_expression(tokens):
@@ -115,7 +164,7 @@ def parse_expression(tokens):
     expression = term { "+"|"-" term }
     """
     node, tokens = parse_term(tokens)
-    while tokens[0]["tag"] in ["+", "-"]:
+    while len(tokens) > 0 and tokens[0]["tag"] in ["+", "-"]:
         tag = tokens[0]["tag"]
         right_node, tokens = parse_term(tokens[1:])
         node = {"tag": tag, "left": node, "right": right_node}
@@ -126,10 +175,33 @@ def test_parse_expression():
     """
     expression = term { "+"|"-" term }
     """
-    pass
+    print("testing parse_expression")
+    exp = "3*(2+8)+7"
+    originalTokens = tokenize(exp)
+    node, tokens = parse_expression(originalTokens)
+    assert node['tag'] == "+"
+
+    assert node['right']['tag'] == "number"
+    assert node['right']['value'] == 7
+
+    assert node['left']['tag'] == "*"
+
+    assert node["left"]["left"]["tag"] == "number"
+    assert node["left"]["left"]["value"] == 3
+
+    assert node["left"]["right"]["tag"] == "+"
+
+    assert node["left"]["right"]["left"]["tag"] == "number"  
+    assert node["left"]["right"]["left"]["value"] == 2
+
+    assert node["left"]["right"]["right"]["tag"] == "number"
+    assert node["left"]["right"]["right"]["value"] == 8
+    
 
 
 if __name__ == "__main__":
     test_parse_simple_expression()
     test_parse_factor()
+    test_parse_term()
+    test_parse_expression()
     print("done")
