@@ -108,11 +108,10 @@ def parse_term(tokens):
     term = factor { "*"|"/" factor }
     """
     node, tokens = parse_factor(tokens)
-    #fixed bug by checking length
-    while len(tokens) > 0 and tokens[0]["tag"] in ["*", "/"]:
+    while tokens[0]["tag"] in ["*", "/"]:
         tag = tokens[0]["tag"]
         right_node, tokens = parse_factor(tokens[1:])
-        node = {"tag": tag, "left": node, "right": right_node}
+        node = {"tag": tag, "left": node, "right": right_node} #shift the node we're saving over by one
     return node, tokens
 
 
@@ -121,6 +120,22 @@ def test_parse_term():
     term = factor { "*"|"/" factor }
     """
     print("testing parse_term")
+
+    tokens = tokenize("2*3/4*5")
+    ast, tokens = parse_term(tokens)
+    assert ast == {
+        "left": {
+            "left": {
+                "left": {"position": 0, "tag": "number", "value": 2},
+                "right": {"position": 2, "tag": "number", "value": 3},
+                "tag": "*",
+            },
+            "right": {"position": 4, "tag": "number", "value": 4},
+            "tag": "/",
+        },
+        "right": {"position": 6, "tag": "number", "value": 5},
+        "tag": "*",
+    }
 
     exp = "23"
     originalTokens = tokenize(exp)
@@ -164,7 +179,7 @@ def parse_expression(tokens):
     expression = term { "+"|"-" term }
     """
     node, tokens = parse_term(tokens)
-    while len(tokens) > 0 and tokens[0]["tag"] in ["+", "-"]:
+    while tokens[0]["tag"] in ["+", "-"]:
         tag = tokens[0]["tag"]
         right_node, tokens = parse_term(tokens[1:])
         node = {"tag": tag, "left": node, "right": right_node}
@@ -196,12 +211,19 @@ def test_parse_expression():
 
     assert node["left"]["right"]["right"]["tag"] == "number"
     assert node["left"]["right"]["right"]["value"] == 8
-    
 
+def parse(tokens):
+    return parse_expression(tokens)
+
+def test_parse():
+    print("testing parse")
+    tokens = tokenize("2+3*4+5")
+    assert parse(tokens) == parse_expression(tokens)
 
 if __name__ == "__main__":
     test_parse_simple_expression()
     test_parse_factor()
     test_parse_term()
     test_parse_expression()
+    test_parse()
     print("done")

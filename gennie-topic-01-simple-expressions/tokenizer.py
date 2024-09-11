@@ -45,6 +45,13 @@ def tokenize(characters): #our input string (array of any characters (Ex: 6*(2+3
                 token["value"] = float(token["value"])
             else:
                 token["value"] = int(token["value"])
+
+    token = {
+            "tag": None,
+            "value": None,
+            "position": position,
+        }
+    tokens.append(token)
     return tokens
 
 def test_simple_tokens():
