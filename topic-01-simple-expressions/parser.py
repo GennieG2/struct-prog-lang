@@ -25,7 +25,7 @@ def parse_simple_expression(tokens):
     if tokens[0]["tag"] == "number":
         return tokens[0], tokens[1:]
     if tokens[0]["tag"] == "(":
-        node, tokens = parse_expression(tokens[1:])
+        node, tokens = parse_arithmetic_expression(tokens[1:])
         assert tokens[0]["tag"] == ")", "Error: expected ')'"
         return node, tokens[1:]
     if tokens[0]["tag"] == "-":

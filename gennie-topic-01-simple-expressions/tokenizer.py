@@ -9,12 +9,19 @@ import re #regular expressions
 patterns = [
     ["\\(", "("],
     ["\\)", ")"],
-    ["\\+", "+" ], #if you find a plus, add a plus token
-    ["\\-", "-" ],
+    ["\\+", "+"], #if you find a plus, add a plus token
+    ["\\-", "-"],
     ["\\*", "*"],
     ["\\/", "/"],
     ["==", "=="],
-    ["(\\d+\\.\\d*)|(\\d*\\.\\d+)|(\\d+)", "number"] #if you find a floating point #, add a floating point #
+    ["!=", "!="],
+    ["<=", "<="],
+    [">=", ">="],
+    ["<", "<"],
+    [">", ">"],
+    ["=", "="],
+    ["(\\d+\\.\\d*)|(\\d*\\.\\d+)|(\\d+)", "number"],
+    ["and", "and"],["or", "or"],["not","not"]
 ]
 
 for pattern in patterns: #for each element in patterns
@@ -31,7 +38,7 @@ def tokenize(characters): #our input string (array of any characters (Ex: 6*(2+3
             match = pattern.match(characters, position) #if reg ex matches string of characters, we got a match!
             if match:
                 break
-        assert match
+        assert match, f"Did not find a match for {characters[position:]}"
         token = {
             'tag':tag,
             'value': match.group(0),
@@ -57,32 +64,25 @@ def tokenize(characters): #our input string (array of any characters (Ex: 6*(2+3
 
 def test_simple_tokens():
     print("testing simple tokens")
-    assert tokenize("+") == [{"tag": "+", "value": "+", "position": 0}] #test for just +
-    assert tokenize("-") == [{"tag": "-", "value": "-", "position": 0}]
+    assert tokenize("+") == [{'tag': '+', 'value': '+', 'position': 0}, {'tag': None, 'value': None, 'position': 1}]
+    assert tokenize("-") == [{"tag": "-", "value": "-", "position": 0}, {'tag': None, 'value': None, 'position': 1} ]
     i = 0
     for char in "+-*/()":
         tokens = tokenize(char)
         assert tokens[0]["tag"] == char
         assert tokens[0]["value"] == char
         assert tokens[0]["position"] == i
-    for characters in ["+","-", "*","/"]:
+    for characters in ["(",")","+", "-", "*", "/", "==","!=","<",">","<=", ">=","=","or","and"]:
         tokens = tokenize(characters)
-        assert tokens[0]["tag"] == characters
+        assert (
+            tokens[0]["tag"] == characters
+        ), f"Expecting {characters}, got {tokens[0]["tag"]}"
         assert tokens[0]["value"] == characters
-    for number in ["123.45","1.", ".1", "123"]:
+    for number in ["123.45", "1.", ".1", "123"]:
         tokens = tokenize(number)
         assert tokens[0]["tag"] == "number"
         assert tokens[0]["value"] == float(number)
 
-    atokens = tokenize("6*(2+5)+7")    
-    for t in atokens:
-        print(t["value"])
-
-
-
-if __name__ == "__main__": #if this is the main program...
+if __name__ == "__main__":
     test_simple_tokens()
-
-    #tokens = tokenize("123.45*+1234*/123*()***34235****")
-    #print(tokens)
     print("done.")
