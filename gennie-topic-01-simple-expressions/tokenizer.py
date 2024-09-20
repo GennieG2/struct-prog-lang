@@ -13,6 +13,7 @@ patterns = [
     ["\\-", "-" ],
     ["\\*", "*"],
     ["\\/", "/"],
+    ["==", "=="],
     ["(\\d+\\.\\d*)|(\\d*\\.\\d+)|(\\d+)", "number"] #if you find a floating point #, add a floating point #
 ]
 
@@ -64,7 +65,7 @@ def test_simple_tokens():
         assert tokens[0]["tag"] == char
         assert tokens[0]["value"] == char
         assert tokens[0]["position"] == i
-    for characters in ["+","-"]:
+    for characters in ["+","-", "*","/"]:
         tokens = tokenize(characters)
         assert tokens[0]["tag"] == characters
         assert tokens[0]["value"] == characters

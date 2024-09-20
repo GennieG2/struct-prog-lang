@@ -14,7 +14,10 @@ factor = simple_expression
 term = factor {"*"|"/" factor }
 
 #An expression is a term or optionally plus or minus term
-expression = term { "+"|"-" term}
+arithmetic_expression = term { "+"|"-" term}
+comparison_expression == arithmetic_expression [ "==" | "!=" | "<" | ">" | "<=" \ ">=" 
+arithmetic_expression]
+### expression = arithmetic_expression
 
 Example:
     2  + 4  * 5  - 6
@@ -38,7 +41,7 @@ def parse_simple_expression(tokens):
     if tokens[0]["tag"] == "number":
         return tokens[0], tokens[1:]
     if tokens[0]["tag"] == "(":
-        node, tokens = parse_expression(tokens[1:])
+        node, tokens = parse_arithmetic_expression(tokens[1:])
         assert tokens[0]["tag"] == ")", "Error: expected ')'"
         return node, tokens[1:]
     if tokens[0]["tag"] == "-":
@@ -174,9 +177,9 @@ def test_parse_term():
     
 
 
-def parse_expression(tokens):
+def parse_arithmetic_expression(tokens):
     """
-    expression = term { "+"|"-" term }
+    arithmetic_expression = term { "+"|"-" term }
     """
     node, tokens = parse_term(tokens)
     while tokens[0]["tag"] in ["+", "-"]:
@@ -186,14 +189,14 @@ def parse_expression(tokens):
     return node, tokens
 
 
-def test_parse_expression():
+def test_parse_arithmetic_expression():
     """
     expression = term { "+"|"-" term }
     """
-    print("testing parse_expression")
+    print("testing parse_arithmetic_expression")
     exp = "3*(2+8)+7"
     originalTokens = tokenize(exp)
-    node, tokens = parse_expression(originalTokens)
+    node, tokens = parse_arithmetic_expression(originalTokens)
     assert node['tag'] == "+"
 
     assert node['right']['tag'] == "number"
@@ -213,19 +216,19 @@ def test_parse_expression():
     assert node["left"]["right"]["right"]["value"] == 8
 
 def parse(tokens):
-    ast, tokens = parse_expression(tokens)
+    ast, tokens = parse_arithmetic_expression(tokens)
     return ast
 
 def test_parse():
     print("testing parse")
     tokens = tokenize("2+3*4+5")
-    ast, _ = parse_expression(tokens)
+    ast, _ = parse_arithmetic_expression(tokens)
     assert parse(tokens) == ast
 
 if __name__ == "__main__":
     test_parse_simple_expression()
     test_parse_factor()
     test_parse_term()
-    test_parse_expression()
+    test_parse_arithmetic_expression()
     test_parse()
     print("done")
