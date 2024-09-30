@@ -33,6 +33,18 @@ def evaluate(ast, environment):
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
         return left_value < right_value, False 
+    if ast["tag"] == ">":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value > right_value, False 
+    if ast["tag"] == "<=":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value <= right_value, False
+    if ast["tag"] == ">=":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value >= right_value, False
     assert False, "Unknown operator in AST"
 
 def equals(code, environment, expected_result, expected_environment=None):
@@ -99,6 +111,31 @@ def test_evaluate_lessThan():
     equals("2<1", {}, False, {})
     equals("4*(2+3)<22", {}, True, {})
 
+def test_evaluate_greaterThan():
+    print("test > operator")
+    equals("2>1", {}, True, {})
+    equals("2>3", {}, False, {})
+    equals("4*(2+3)>18", {}, True, {})
+
+def test_evaluate_lessThanIsEqual():
+    print("test <= operator")
+    equals("2<=3", {}, True, {})
+    equals("2<=1", {}, False, {})
+    equals("2<=2", {}, True, {})
+    equals("4*(2+3)<=22", {}, True, {})
+    equals("4*(2+3)<=20", {}, True, {})
+    equals("4*(2+3)<=18", {}, False, {})
+
+def test_evaluate_greaterThanIsEqual():
+    print("test >= operator")
+    equals("2>=1", {}, True, {})
+    equals("2>=3", {}, False, {})
+    equals("2>=2", {}, True, {})
+    equals("4*(2+3)>=18", {}, True, {})
+    equals("4*(2+3)>=22", {}, False, {})
+    equals("4*(2+3)>=20", {}, True, {})
+
+
 if __name__ == "__main__":
     test_evaluate_single_value()
     test_evaluate_addition()
@@ -108,4 +145,7 @@ if __name__ == "__main__":
     test_evaluate_negation()
     test_evaluate_isEqual()
     test_evaluate_lessThan()
+    test_evaluate_greaterThan()
+    test_evaluate_lessThanIsEqual()
+    test_evaluate_greaterThanIsEqual()
     print("done.")
