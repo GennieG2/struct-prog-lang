@@ -15,7 +15,7 @@ term = factor {"*"|"/" factor }
 
 arithmetic_expression = term { "+"|"-" term }
 comparison_expression == arithmetic_expression [ "==" | "!=" | "<" | ">" | "<=" | ">="  arithmetic expression ]
-boolean_term == comparison_expression { "and" comparison_expression }
+boolean_term == comparison_expression { "&&" comparison_expression }
 boolean_expression == boolean_term { "or" boolean_term }
 expression = boolean_expression
 

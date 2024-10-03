@@ -25,10 +25,18 @@ def evaluate(ast, environment):
     if ast["tag"] == "negate":
         value, _ = evaluate(ast["value"], environment)
         return -value, False
+    if ast["tag"] == "&&":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value and right_value, False
     if ast["tag"] == "==":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
         return left_value == right_value, False
+    if ast["tag"] == "!=":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value != right_value, False
     if ast["tag"] == "<":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
@@ -99,11 +107,24 @@ def test_evaluate_negation():
     equals("-2",{},-2,{})
     equals("--3",{},3,{})
 
+def test_evaluate_and():
+    print("test evaluate &&")
+    equals("1==1&&1==1", {}, True, {})
+    equals("1==1&&1==2", {}, False, {})
+    equals("1==2&&1==1", {}, False, {})
+    equals("1==2&&1==2", {}, False, {})
+
 def test_evaluate_isEqual():
     print("test == operator")
     equals("2==2", {}, True, {})
     equals("2==3", {}, False, {})
     equals("4*(2+3)==20", {}, True, {})
+
+def test_evaluate_notEqual():
+    print("test != operator")
+    equals("2!=3", {}, True, {})
+    equals("2!=2", {}, False, {})
+    equals("4*(2+3)!=20", {}, False, {})
 
 def test_evaluate_lessThan():
     print("test < operator")
@@ -143,7 +164,9 @@ if __name__ == "__main__":
     test_evaluate_multiplication()
     test_evaluate_division()
     test_evaluate_negation()
+    test_evaluate_and()
     test_evaluate_isEqual()
+    test_evaluate_notEqual()
     test_evaluate_lessThan()
     test_evaluate_greaterThan()
     test_evaluate_lessThanIsEqual()
