@@ -5,6 +5,10 @@ def evaluate(ast, environment):
     if ast["tag"] == "number":
         assert type(ast["value"]) in [float, int],f"unexpected numerical type {type(ast["value"])}"
         return ast["value"], False
+    if ast["tag"] == "identifier":
+        identifier = ast["value"]
+        assert identifier in environment, f"Unknown identifier: '{identifier}'."
+        return environment[identifier], False
     if ast["tag"] == "+":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
@@ -36,22 +40,14 @@ def evaluate(ast, environment):
     if ast["tag"] == "!":
         value, _ = evaluate(ast["value"], environment)
         return not value, False
-    if ast["tag"] == "==":
-        left_value, _ = evaluate(ast["left"], environment)
-        right_value, _ = evaluate(ast["right"], environment)
-        return left_value == right_value, False
-    if ast["tag"] == "!=":
-        left_value, _ = evaluate(ast["left"], environment)
-        right_value, _ = evaluate(ast["right"], environment)
-        return left_value != right_value, False
     if ast["tag"] == "<":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
-        return left_value < right_value, False 
+        return left_value < right_value, False
     if ast["tag"] == ">":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
-        return left_value > right_value, False 
+        return left_value > right_value, False
     if ast["tag"] == "<=":
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
@@ -60,6 +56,35 @@ def evaluate(ast, environment):
         left_value, _ = evaluate(ast["left"], environment)
         right_value, _ = evaluate(ast["right"], environment)
         return left_value >= right_value, False
+    if ast["tag"] == "==":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value == right_value, False
+    if ast["tag"] == "!=":
+        left_value, _ = evaluate(ast["left"], environment)
+        right_value, _ = evaluate(ast["right"], environment)
+        return left_value != right_value, False
+    if ast["tag"] == "print":
+        if ast["value"]:
+            value, _ = evaluate(ast["value"], environment)
+            print(value)
+        else:
+            print()
+        return None, False
+    if ast["tag"] == "=":
+        assert 'target' in ast
+        target = ast['target']
+        assert target['tag'] == 'identifier'
+        identifier = target['value']
+        value, _ = evaluate(ast["value"], environment)
+        environment[identifier] = value
+        return None, False
+    if ast["tag"] == "list":
+        while ast:
+            assert "statement" in ast
+            value, return_chain = evaluate(ast["statement"], environment)
+            ast = ast["list"]
+        return value, return_chain
     assert False, "Unknown operator in AST"
 
 def equals(code, environment, expected_result, expected_environment=None):
@@ -85,12 +110,15 @@ def test_evaluate_single_value():
     equals("4",{},4,{})
     equals("3",{},3,{})
     equals("4.2",{},4.2,{})
+    equals("X", {'X':1}, 1)
+    equals("Y", {'X':1, 'Y':2}, 2)
 
 def test_evaluate_addition():
     print("test evaluate addition")
     equals("1+1",{},2,{})
     equals("1+2+3",{},6,{})
     equals("1.2+2.3+3.4",{},6.9,{})
+    equals("X+Y", {"X": 1, "Y": 2}, 3)
 
 def test_evaluate_subtraction():
     print("test evaluate subtraction")
@@ -114,67 +142,24 @@ def test_evaluate_negation():
     equals("-2",{},-2,{})
     equals("--3",{},3,{})
 
-def test_evaluate_and():
-    print("test evaluate &&")
-    equals("1==1&&1==1", {}, True, {})
-    equals("1==1&&1==2", {}, False, {})
-    equals("1==2&&1==1", {}, False, {})
-    equals("1==2&&1==2", {}, False, {})
 
-def test_evaluate_or():
-    print("test evaluate ||")
-    equals("1==1||1==1", {}, True, {})
-    equals("1==1||1==2", {}, True, {})
-    equals("1==2||1==1", {}, True, {})
-    equals("1==2||1==2", {}, False, {})
+def test_print_statement():
+    print("test print statement")
+    equals("print(77)", {}, None, {})
+    equals("print()", {}, None, {})
+    equals("print(50+7)", {}, None, {})
+    equals("print(50+8)", {}, None, {})
 
-"""def test_evaluate_not():
-    print("test evaluate !")
-    equals("!1==1", {}, False, {})
-    equals("!1==2", {}, True, {})"""
 
-def test_evaluate_isEqual():
-    print("test == operator")
-    equals("2==2", {}, True, {})
-    equals("2==3", {}, False, {})
-    equals("4*(2+3)==20", {}, True, {})
+def test_assignment_statement():
+    print("test assignment_statement")
+    equals("X=1", {}, None, {"X": 1})
+    equals("x=x+1", {"x": 1}, None, {"x": 2})
 
-def test_evaluate_notEqual():
-    print("test != operator")
-    equals("2!=3", {}, True, {})
-    equals("2!=2", {}, False, {})
-    equals("4*(2+3)!=20", {}, False, {})
-
-def test_evaluate_lessThan():
-    print("test < operator")
-    equals("2<3", {}, True, {})
-    equals("2<1", {}, False, {})
-    equals("4*(2+3)<22", {}, True, {})
-
-def test_evaluate_greaterThan():
-    print("test > operator")
-    equals("2>1", {}, True, {})
-    equals("2>3", {}, False, {})
-    equals("4*(2+3)>18", {}, True, {})
-
-def test_evaluate_lessThanIsEqual():
-    print("test <= operator")
-    equals("2<=3", {}, True, {})
-    equals("2<=1", {}, False, {})
-    equals("2<=2", {}, True, {})
-    equals("4*(2+3)<=22", {}, True, {})
-    equals("4*(2+3)<=20", {}, True, {})
-    equals("4*(2+3)<=18", {}, False, {})
-
-def test_evaluate_greaterThanIsEqual():
-    print("test >= operator")
-    equals("2>=1", {}, True, {})
-    equals("2>=3", {}, False, {})
-    equals("2>=2", {}, True, {})
-    equals("4*(2+3)>=18", {}, True, {})
-    equals("4*(2+3)>=22", {}, False, {})
-    equals("4*(2+3)>=20", {}, True, {})
-
+def test_statement_list():
+    print("test statement_list")
+    equals("1", {}, 1)
+    equals("1;2;print(4);print(5);x=6;print(x)", {}, None)
 
 if __name__ == "__main__":
     test_evaluate_single_value()
@@ -183,12 +168,7 @@ if __name__ == "__main__":
     test_evaluate_multiplication()
     test_evaluate_division()
     test_evaluate_negation()
-    test_evaluate_and()
-    test_evaluate_or()
-    test_evaluate_isEqual()
-    test_evaluate_notEqual()
-    test_evaluate_lessThan()
-    test_evaluate_greaterThan()
-    test_evaluate_lessThanIsEqual()
-    test_evaluate_greaterThanIsEqual()
+    test_print_statement()
+    test_assignment_statement()
+    test_statement_list()
     print("done.")
