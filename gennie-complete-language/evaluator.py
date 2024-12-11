@@ -197,6 +197,8 @@ def test_evaluate_single_value():
     equals("4.2", {}, 4.2, {})
     equals("X", {"X": 1}, 1)
     equals("Y", {"X": 1, "Y": 2}, 2)
+    #equals('"x"',{"x":"cat", "y":2},"x")
+    #equals("x",{"x":"cat", "y":2},"cat")
 
 
 def test_evaluate_addition():
