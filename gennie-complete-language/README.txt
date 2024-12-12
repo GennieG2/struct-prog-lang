@@ -1,5 +1,4 @@
-I implemented the power operator (^) in the tokenizer, parser, and evaluator with respect to the correct order of operations.
-Every comment in the code with the prefix "FINAL" is a comment intended to show the work I added for my project. However, the same descriptions can be found below.
+I decided to implemented the power operator (^) in the tokenizer, parser, and evaluator with respect to the correct order of operations, because it is an important arithmetic operator that we did not implement. I compiled and ran the program; it compiled successfully and executed without any errors.  **I know I have succeeded because my new evaluation test that contains multiple scenarios of using the power operator succeeded.** Every comment in the code with the prefix "FINAL" is a comment intended to show the work I added for my project. However, the same descriptions can be found below.
 
 Tokenizer.py
   I added pattern for power operator:
