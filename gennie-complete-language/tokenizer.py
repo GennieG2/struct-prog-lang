@@ -4,7 +4,7 @@ patterns = [
     [r"//[^\n]*", "comment"],  # Comment
     [r"\s+", "whitespace"],  # Whitespace
     [r"\d*\.\d+|\d+\.\d*|\d+", "number"],  # numeric literals
-    [r'"([^"]|"")*"', "string"],  # string literals
+    [r'"([^"]|"")*"', "string"],  # string literals 
     [r"true|false", "boolean"],  # boolean literals
     [r"null", "null"],  # the null literal
     [r"function", "function"],  # function keyword
@@ -28,7 +28,7 @@ patterns = [
     [r"\-", "-"],
     [r"\*", "*"],
     [r"\/", "/"],
-    [r"\^", "^"],  #part of project addition
+    [r"\^", "^"],  #FINAL -- Adding pattern for power operator 
     [r"\(", "("],
     [r"\)", ")"],
     [r"\{", "{"],

@@ -13,8 +13,8 @@ grammar = """
 
     complex_expression = simple_expression { ("[" expression "]") | ("." identifier) | "(" [ expression { "," expression } ] ")" } ;
 
-    arithmetic_power_term = complex_expression ;
-    arithmetic_factor = arithmetic_power_term { ("^") arithmetic_power_term } ;
+    arithmetic_power_operand = complex_expression ;
+    arithmetic_factor = arithmetic_power_operand { ("^") arithmetic_power_operand } ;
     arithmetic_term = arithmetic_factor { ("*" | "/") arithmetic_factor } ;
     arithmetic_expression = arithmetic_term { ("+" | "-") arithmetic_term } ;
     relational_expression = arithmetic_expression { ("<" | ">" | "<=" | ">=" | "==" | "!=") arithmetic_expression } ;
@@ -442,37 +442,44 @@ def test_parse_complex_expression():
 
 # ARITHMETIC EXPRESSIONS
 
-
-def parse_arithmetic_power_term(tokens):
+#FINAL -- newly introduced function to return AST for the last in chain operand 
+#Having that power operator has the highest precendence, the calling of parse_complex_expression now moved here from parse_arithmeic_factor.
+def parse_arithmetic_power_operand(tokens):
     """
-    arithmetic_power_term = complex_expression ;
+    arithmetic_power_operand = complex_expression ;
     """
     return parse_complex_expression(tokens)
 
-
-def test_parse_arithmetic_power_term():
+#FINAL -- testing parse_arithmetic_power_operand function
+#making sure that the operand is a valid complex expression
+def test_parse_arithmetic_power_operand():
     """
-    arithmetic_power_term = complex_expression ;
+    arithmetic_power_operand = complex_expression ;
     """
-    print("testing parse_arithmetic_power_term...")
+    print("testing parse_arithmetic_power_operand...")
     for expression in ["1", "1.2", "true", "x", "-1"]:
         t = tokenize(expression)
-        assert parse_arithmetic_power_term(t)[0] == parse_complex_expression(t)[0]
+        assert parse_arithmetic_power_operand(t)[0] == parse_complex_expression(t)[0]
 
+#FINAL -- now when we introduced power operator, parse_arithmetic_factor is not last in chain. So I modified it.
+#Now, parse_arithmetic_factor first calls parse_arithmetic_power_operand() to get the AST for the left operand
+# and then if the next token is power operator it calls parse_arithmetic_power_operand() function a second time for the right operand
+# and returns a constructed AST for the power operator
 def parse_arithmetic_factor(tokens):
     """
-    arithmetic_factor = arithmetic_power_term { ("^") arithmetic_power_term } ;
+    arithmetic_factor = arithmetic_power_operand { ("^") arithmetic_power_operand } ;
     """
-    node, tokens = parse_arithmetic_power_term(tokens)
+    node, tokens = parse_arithmetic_power_operand(tokens)
     while tokens[0]["tag"] in ["^"]:
         tag = tokens[0]["tag"]
-        next_node, tokens = parse_arithmetic_power_term(tokens[1:])
+        next_node, tokens = parse_arithmetic_power_operand(tokens[1:])
         node = {"tag": tag, "left": node, "right": next_node}
     return node, tokens
 
+# FINAL -- test_parse_arithmetic_factor makes sure that if the factor contains the power operator, the correct AST for the power operator is returned. 
 def test_parse_arithmetic_factor():
     """
-    arithmetic_factor = arithmetic_power_term { ("^") arithmetic_power_term } ; 
+    arithmetic_factor = arithmetic_power_operand { ("^") arithmetic_power_operand } ; 
     """
     print("testing parse_arithmetic_factor...")
     ast, tokens = parse_arithmetic_factor(tokenize("x"))
@@ -1173,7 +1180,7 @@ if __name__ == "__main__":
         test_parse_object_literal,
         test_parse_function_literal,
         test_parse_complex_expression,
-        test_parse_arithmetic_power_term,
+        test_parse_arithmetic_power_operand,
         test_parse_arithmetic_factor,
         test_parse_arithmetic_term,
         test_parse_arithmetic_expression,

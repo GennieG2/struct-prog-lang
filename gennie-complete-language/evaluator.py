@@ -229,6 +229,7 @@ def test_evaluate_division():
     equals("4/2", {}, 2, {})
     equals("8/4/2", {}, 1, {})
 
+#FINAL
 def test_evaluate_power():
     print("test evaluate power")
     equals("4^2", {}, 16, {})
